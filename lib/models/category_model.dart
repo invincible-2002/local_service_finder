@@ -1,13 +1,13 @@
 class Category {
   final String id;
   final String name;
-  final String icon;
+  final String? icon;  // Made nullable with ?
   final DateTime createdAt;
 
   Category({
     required this.id,
     required this.name,
-    required this.icon,
+    this.icon,  // Now optional
     required this.createdAt,
   });
 
@@ -16,12 +16,12 @@ class Category {
     return Category(
       id: json['id'] as String,
       name: json['name'] as String,
-      icon: json['icon'] as String,
+      icon: json['icon'] as String?,  // Can be null now
       createdAt: DateTime.parse(json['created_at'] as String),
     );
   }
 
-  // Convert Category object to JSON (for sending to Supabase)
+  // Convert Category object to JSON
   Map<String, dynamic> toJson() {
     return {
       'id': id,

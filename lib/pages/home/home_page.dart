@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../services/category_service.dart';
 import '../../services/provider_service.dart';
 import '../../models/category_model.dart';
 import '../../models/service_provider_model.dart';
+import 'search_results_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -51,34 +53,70 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _loadCategories() async {
+    print('🏠 HomePage: Starting to load categories...');
+    
     try {
       final categories = await _categoryService.getCategories();
+      
+      print('🏠 HomePage: Received ${categories.length} categories');
+      
       setState(() {
         _categories = categories;
         _isLoadingCategories = false;
       });
-    } catch (e) {
+      
+      print('🏠 HomePage: State updated with categories');
+    } catch (e, stackTrace) {
+      print('❌ HomePage: Error loading categories: $e');
+      print('📍 HomePage: Stack trace: $stackTrace');
+      
       setState(() => _isLoadingCategories = false);
+      
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to load categories: $e')),
+          SnackBar(
+            content: Text('Failed to load categories: $e'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 5),
+          ),
         );
       }
     }
   }
 
   Future<void> _loadTopProviders() async {
+    print('🏠 HomePage: Starting to load top providers...');
+    
     try {
       final providers = await _providerService.getServiceProviders();
+      
+      // Remove duplicates based on user_id
+      final Map<String, ServiceProvider> uniqueProviders = {};
+      for (var provider in providers) {
+        if (!uniqueProviders.containsKey(provider.userId)) {
+          uniqueProviders[provider.userId] = provider;
+        }
+      }
+      
       setState(() {
-        _topProviders = providers;
+        _topProviders = uniqueProviders.values.toList();
         _isLoadingProviders = false;
       });
-    } catch (e) {
+      
+      print('🏠 HomePage: Loaded ${_topProviders.length} unique providers');
+    } catch (e, stackTrace) {
+      print('❌ HomePage: Error loading providers: $e');
+      print('📍 HomePage: Stack trace: $stackTrace');
+      
       setState(() => _isLoadingProviders = false);
+      
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to load providers: $e')),
+          SnackBar(
+            content: Text('Failed to load providers: $e'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 5),
+          ),
         );
       }
     }
@@ -86,17 +124,18 @@ class _HomePageState extends State<HomePage> {
 
   // Search functionality
   void _performSearch(String query) {
-    if (query.isEmpty) return;
+    if (query.trim().isEmpty) return;
     
-    // TODO: Navigate to search results page
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Searching for: $query')),
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => SearchResultsPage(query: query.trim()),
+      ),
     );
   }
 
   // Handle category click
   void _onCategoryTap(Category category) {
-    // TODO: Navigate to provider list page by category
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Selected category: ${category.name}')),
     );
@@ -118,46 +157,55 @@ class _HomePageState extends State<HomePage> {
     return SafeArea(
       child: RefreshIndicator(
         onRefresh: _loadData,
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          child: Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Header with profile
-                _buildHeader(userName),
-                const SizedBox(height: 25),
-                
-                // Search bar
-                _buildSearchBar(),
-                const SizedBox(height: 30),
-                
-                // Service Categories
-                const Text(
-                  'Service Categories',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
+        child: ScrollConfiguration(
+          behavior: ScrollConfiguration.of(context).copyWith(
+            dragDevices: {
+              PointerDeviceKind.touch,
+              PointerDeviceKind.mouse,
+            },
+            scrollbars: false,
+          ),
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Header with profile
+                  _buildHeader(userName),
+                  const SizedBox(height: 25),
+                  
+                  // Search bar
+                  _buildSearchBar(),
+                  const SizedBox(height: 30),
+                  
+                  // Service Categories
+                  const Text(
+                    'Service Categories',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 15),
-                _buildCategorySection(),
-                const SizedBox(height: 30),
-                
-                // Top Rated Services
-                const Text(
-                  'Top Rated Services',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black87,
+                  const SizedBox(height: 15),
+                  _buildCategorySection(),
+                  const SizedBox(height: 30),
+                  
+                  // Top Rated Services
+                  const Text(
+                    'Top Rated Services',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 15),
-                _buildTopRatedSection(),
-              ],
+                  const SizedBox(height: 15),
+                  _buildTopRatedSection(),
+                ],
+              ),
             ),
           ),
         ),
@@ -468,7 +516,6 @@ class _HomePageState extends State<HomePage> {
           // Book Button
           ElevatedButton(
             onPressed: () {
-              // TODO: Navigate to provider detail page
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text('Booking ${provider.userName}')),
               );
