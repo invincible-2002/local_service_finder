@@ -3,6 +3,7 @@ import '../../services/category_service.dart';
 import '../../services/provider_service.dart';
 import '../../models/category_model.dart';
 import '../../models/service_provider_model.dart';
+import '../provider/provider_list_page.dart';
 
 class SearchResultsPage extends StatefulWidget {
   final String query;
@@ -122,36 +123,39 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
     );
   }
 
-  Widget _buildCategoriesSection() {
-    return Wrap(
-      spacing: 10,
-      runSpacing: 10,
-      children: _categories.map((category) {
-        return GestureDetector(
-          onTap: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Selected: ${category.name}')),
-            );
-          },
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: BoxDecoration(
-              color: Colors.blue[50],
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: Colors.blue[200]!),
+ Widget _buildCategoriesSection() {
+  return Wrap(
+    spacing: 10,
+    runSpacing: 10,
+    children: _categories.map((category) {
+      return GestureDetector(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => ProviderListPage(category: category),
             ),
-            child: Text(
-              category.name,
-              style: TextStyle(
-                color: Colors.blue[700],
-                fontWeight: FontWeight.w500,
-              ),
+          );
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          decoration: BoxDecoration(
+            color: Colors.blue[50],
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: Colors.blue[200]!),
+          ),
+          child: Text(
+            category.name,
+            style: TextStyle(
+              color: Colors.blue[700],
+              fontWeight: FontWeight.w500,
             ),
           ),
-        );
-      }).toList(),
-    );
-  }
+        ),
+      );
+    }).toList(),
+  );
+}
 
   Widget _buildProvidersSection() {
     return Column(

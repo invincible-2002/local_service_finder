@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'pages/auth/sign_in_page.dart';
 import 'pages/home/home_page.dart';
 
@@ -11,7 +12,8 @@ void main() async {
     anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind0YnpkbW11bGRzc2FteHNpdWl2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAzMTE4NzEsImV4cCI6MjA4NTg4Nzg3MX0.kHAtBQHNyGcTAahs33MeDmkbUiqXgwwHv3ThEyxgGdg',
   );
 
-  runApp(const MyApp());
+  runApp(const ProviderScope(child: MyApp(),),
+  );
 }
 
 class MyApp extends StatelessWidget {
