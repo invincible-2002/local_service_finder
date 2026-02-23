@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../services/category_service.dart';
 import '../services/provider_service.dart';
 import '../services/service_service.dart';
@@ -9,6 +10,7 @@ import '../models/service_provider_model.dart';
 import '../models/service_model.dart';
 import '../models/review_model.dart';
 import '../models/provider_work_image_model.dart';
+import '../models/profile_model.dart';
 
 // ==================== SERVICE PROVIDERS ====================
 
@@ -110,4 +112,13 @@ final providerWorkImagesProvider = FutureProvider.family<List<ProviderWorkImage>
     final service = ref.read(profileServiceProvider);
     return await service.getProviderWorkImages(providerId);
   },
+);
+// User Profile Provider
+final userProfileProvider = FutureProvider<Profile?>((ref) async {
+  final user = Supabase.instance.client.auth.currentUser;
+  if (user == null) return null;
+  
+  final profileService = ProfileService();
+  return await profileService.getUserProfile(user.id);
+}
 );

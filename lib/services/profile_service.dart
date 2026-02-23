@@ -1,19 +1,21 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/profile_model.dart';
 import '../models/provider_work_image_model.dart';
+import 'dart:io';
 
 class ProfileService {
   final SupabaseClient _client = Supabase.instance.client;
 
-  // Fetch user profile by user ID
-  Future<Profile?> getProfile(String userId) async {
+  // Get user profile
+  Future<Profile?> getUserProfile(String userId) async {
     try {
       final response = await _client
           .from('profiles')
           .select()
           .eq('id', userId)
-          .single();
+          .maybeSingle();
 
+      if (response == null) return null;
       return Profile.fromJson(response);
     } catch (e) {
       throw Exception('Failed to fetch profile: $e');
@@ -23,26 +25,48 @@ class ProfileService {
   // Update user profile
   Future<void> updateProfile({
     required String userId,
-    String? fullName,
-    String? phone,
-    String? avatarUrl,
+    required String fullName,
+    String? phoneNumber,
+    String? address,
+    String? profileImage,
   }) async {
     try {
-      final updates = <String, dynamic>{};
-      if (fullName != null) updates['full_name'] = fullName;
-      if (phone != null) updates['phone'] = phone;
-      if (avatarUrl != null) updates['avatar_url'] = avatarUrl;
-
-      await _client
-          .from('profiles')
-          .update(updates)
-          .eq('id', userId);
+      await _client.from('profiles').update({
+        'full_name': fullName,
+        'phone_number': phoneNumber,
+        'address': address,
+        'profile_image': profileImage,
+      }).eq('id', userId);
     } catch (e) {
       throw Exception('Failed to update profile: $e');
     }
   }
 
-  // Fetch provider work images
+  // Upload profile image
+  Future<String> uploadProfileImage({
+    required String userId,
+    required String filePath,
+  }) async {
+    try {
+      final file = File(filePath);
+      final fileExt = filePath.split('.').last;
+      final fileName = '$userId/profile-${DateTime.now().millisecondsSinceEpoch}.$fileExt';
+
+      await _client.storage.from('profile-images').upload(
+            fileName,
+            file,
+            fileOptions: const FileOptions(upsert: true),
+          );
+
+      final publicUrl = _client.storage.from('profile-images').getPublicUrl(fileName);
+
+      return publicUrl;
+    } catch (e) {
+      throw Exception('Failed to upload image: $e');
+    }
+  }
+
+  // Get provider work images
   Future<List<ProviderWorkImage>> getProviderWorkImages(String providerId) async {
     try {
       final response = await _client
@@ -56,21 +80,6 @@ class ProfileService {
           .toList();
     } catch (e) {
       throw Exception('Failed to fetch work images: $e');
-    }
-  }
-
-  // Add provider work image
-  Future<void> addWorkImage({
-    required String providerId,
-    required String imageUrl,
-  }) async {
-    try {
-      await _client.from('provider_work_images').insert({
-        'provider_id': providerId,
-        'image_url': imageUrl,
-      });
-    } catch (e) {
-      throw Exception('Failed to add work image: $e');
     }
   }
 }
