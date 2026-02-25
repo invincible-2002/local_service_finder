@@ -70,4 +70,15 @@ class BookingService {
       throw Exception('Failed to update booking status: $e');
     }
   }
+  // Mark booking as reviewed
+Future<void> markBookingAsReviewed(String bookingId) async {
+  try {
+    await _client
+        .from('bookings')
+        .update({'reviewed': true})
+        .eq('id', bookingId);
+  } catch (e) {
+    throw Exception('Failed to mark booking as reviewed: $e');
+  }
+}
 }

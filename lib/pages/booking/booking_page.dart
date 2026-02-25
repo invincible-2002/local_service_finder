@@ -642,78 +642,84 @@ class _BookingPageState extends ConsumerState<BookingPage> {
     );
   }
 
-  Widget _buildSummarySection() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Colors.blue[50]!,
-            Colors.blue[100]!,
-          ],
-        ),
-        borderRadius: BorderRadius.circular(15),
-        border: Border.all(color: Colors.blue[200]!),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(Icons.receipt_long, color: Colors.blue[700]),
-              const SizedBox(width: 10),
-              const Text(
-                'Booking Summary',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 15),
-          _buildSummaryRow('Service', _selectedService?.title ?? 'Not selected'),
-          _buildSummaryRow(
-            'Date',
-            _selectedDate == null
-                ? 'Not selected'
-                : '${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}',
-          ),
-          _buildSummaryRow(
-            'Time',
-            _selectedTime == null ? 'Not selected' : _selectedTime!.format(context),
-          ),
-          const Divider(height: 30),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                'Total Amount:',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
-              ),
-              Text(
-                _selectedService == null
-                    ? '৳0'
-                    : '৳${_selectedService!.price.toInt()}',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.blue[700],
-                ),
-              ),
-            ],
-          ),
+ Widget _buildSummarySection() {
+  return Container(
+    padding: const EdgeInsets.all(20),
+    decoration: BoxDecoration(
+      gradient: LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [
+          Colors.blue[50]!,
+          Colors.blue[100]!,
         ],
       ),
-    );
-  }
+      borderRadius: BorderRadius.circular(15),
+      border: Border.all(color: Colors.blue[200]!),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(Icons.receipt_long, color: Colors.blue[700]),
+            const SizedBox(width: 10),
+            const Text(
+              'Booking Summary',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 15),
+        _buildSummaryRow('Service', _selectedService?.title ?? 'Not selected'),
+        _buildSummaryRow(
+          'Date',
+          _selectedDate == null
+              ? 'Not selected'
+              : '${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}',
+        ),
+        _buildSummaryRow(
+          'Time',
+          _selectedTime == null 
+              ? 'Not selected' 
+              : _formatTime(_selectedTime!),  // ← FIXED!
+        ),
+        _buildSummaryRow(
+          'Provider',
+          widget.provider.userName ?? 'Unknown',  // ← FIXED! Show name instead of ID
+        ),
+        const Divider(height: 30),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              'Total Amount:',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
+            ),
+            Text(
+              _selectedService == null
+                  ? '৳0'
+                  : '৳${_selectedService!.price.toInt()}',
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: Colors.blue[700],
+              ),
+            ),
+          ],
+        ),
+      ],
+    ),
+  );
+}
 
   Widget _buildSummaryRow(String label, String value) {
     return Padding(
@@ -775,4 +781,10 @@ class _BookingPageState extends ConsumerState<BookingPage> {
       ),
     );
   }
+  String _formatTime(TimeOfDay time) {
+  final hour = time.hourOfPeriod == 0 ? 12 : time.hourOfPeriod;
+  final minute = time.minute.toString().padLeft(2, '0');
+  final period = time.period == DayPeriod.am ? 'AM' : 'PM';
+  return '$hour:$minute $period';
+}
 }

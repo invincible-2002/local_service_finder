@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../models/booking_model.dart';
 import '../../services/booking_service.dart';
+import '../reviews/leave_review_page.dart';
+
 
 // Provider for user's bookings
 // Provider for user's bookings (excluding cancelled)
@@ -201,163 +203,217 @@ class MyBookingsPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildBookingCard(BuildContext context, Booking booking, WidgetRef ref) {
-    final statusColor = _getStatusColor(booking.status);
-    final statusIcon = _getStatusIcon(booking.status);
+ Widget _buildBookingCard(BuildContext context, Booking booking, WidgetRef ref) {
+  final statusColor = _getStatusColor(booking.status);
+  final statusIcon = _getStatusIcon(booking.status);
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 15),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(15),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 5),
+  return Container(
+    margin: const EdgeInsets.only(bottom: 15),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(15),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.grey.withOpacity(0.1),
+          blurRadius: 10,
+          offset: const Offset(0, 5),
+        ),
+      ],
+    ),
+    child: Column(
+      children: [
+        // Header with status
+        Container(
+          padding: const EdgeInsets.all(15),
+          decoration: BoxDecoration(
+            color: statusColor.withOpacity(0.1),
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(15),
+              topRight: Radius.circular(15),
+            ),
           ),
-        ],
-      ),
-      child: Column(
-        children: [
-          // Header with status
-          Container(
-            padding: const EdgeInsets.all(15),
-            decoration: BoxDecoration(
-              color: statusColor.withOpacity(0.1),
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(15),
-                topRight: Radius.circular(15),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: statusColor.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(
+                  statusIcon,
+                  color: statusColor,
+                  size: 20,
+                ),
               ),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: statusColor.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Icon(
-                    statusIcon,
-                    color: statusColor,
-                    size: 20,
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Booking ID: ${booking.id.substring(0, 8)}...',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey[600],
-                        ),
-                      ),
-                      const SizedBox(height: 3),
-                      Text(
-                        booking.status.toUpperCase(),
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                          color: statusColor,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          // Booking details
-          Padding(
-            padding: const EdgeInsets.all(15),
-            child: Column(
-              children: [
-                // Date & Time
-                Row(
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(
-                      child: _buildInfoRow(
-                        Icons.calendar_today,
-                        'Date',
-                        _formatDate(booking.serviceDate),
+                    Text(
+                      'Booking ID: ${booking.id.substring(0, 8)}...',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey[600],
                       ),
                     ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: _buildInfoRow(
-                        Icons.access_time,
-                        'Time',
-                        _formatTime(booking.serviceDate),
+                    const SizedBox(height: 3),
+                    Text(
+                      booking.status.toUpperCase(),
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: statusColor,
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 15),
+              ),
+            ],
+          ),
+        ),
 
-                // Provider (if you want to show provider name, you need to fetch it)
-                _buildInfoRow(
-                  Icons.person,
-                  'Provider ID',
-                  booking.providerId.substring(0, 8) + '...',
-                ),
+        // Booking details
+        Padding(
+          padding: const EdgeInsets.all(15),
+          child: Column(
+            children: [
+              // Date & Time
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildInfoRow(
+                      Icons.calendar_today,
+                      'Date',
+                      _formatDate(booking.serviceDate),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: _buildInfoRow(
+                      Icons.access_time,
+                      'Time',
+                      _formatTime(booking.serviceDate),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 15),
 
-                const SizedBox(height: 15),
+              // Provider
+              _buildInfoRow(
+                Icons.person,
+                'Provider ID',
+                booking.providerId.substring(0, 8) + '...',
+              ),
 
-                // Actions
-                if (booking.status.toLowerCase() == 'pending')
-                  Row(
-                    children: [
-                      Expanded(
-                        child: OutlinedButton.icon(
-                          onPressed: () {
-                            _showCancelDialog(context, booking.id, ref);
-                          },
-                          icon: const Icon(Icons.cancel_outlined, size: 18),
-                          label: const Text('Cancel'),
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: Colors.red,
-                            side: const BorderSide(color: Colors.red),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
+              const SizedBox(height: 15),
+
+              // Actions + Review Section
+              const SizedBox(height: 15),
+              if (booking.status.toLowerCase() == 'pending')
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: () {
+                          _showCancelDialog(context, booking.id, ref);
+                        },
+                        icon: const Icon(Icons.cancel_outlined, size: 18),
+                        label: const Text('Cancel'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.red,
+                          side: const BorderSide(color: Colors.red),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
                           ),
                         ),
                       ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          onPressed: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Contact provider feature coming soon!'),
-                              ),
-                            );
-                          },
-                          icon: const Icon(Icons.phone, size: 18),
-                          label: const Text('Contact'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blue[700],
-                            foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Contact provider feature coming soon!'),
                             ),
+                          );
+                        },
+                        icon: const Icon(Icons.phone, size: 18),
+                        label: const Text('Contact'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue[700],
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
                           ),
+                        ),
+                      ),
+                    ),
+                  ],
+                )
+              else if (booking.status.toLowerCase() == 'completed' && !(booking.reviewed ?? false))
+                // Leave Review button
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: () async {
+                      final result = await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => LeaveReviewPage(booking: booking),
+                        ),
+                      );
+
+                      // Refresh if review was submitted
+                      if (result == true) {
+                        ref.invalidate(myBookingsProvider);
+                      }
+                    },
+                    icon: const Icon(Icons.rate_review, size: 18),
+                    label: const Text('Leave Review'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.amber[700],
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                  ),
+                )
+              else if (booking.status.toLowerCase() == 'completed' && (booking.reviewed ?? false))
+                // Reviewed badge
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.green[50],
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.check_circle, color: Colors.green[700], size: 18),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Review Submitted',
+                        style: TextStyle(
+                          color: Colors.green[700],
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ],
                   ),
-              ],
-            ),
+                ),
+            ],
           ),
-        ],
-      ),
-    );
-  }
+        ),
+      ],
+    ),
+  );
+}
 
   Widget _buildInfoRow(IconData icon, String label, String value) {
     return Container(
