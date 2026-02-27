@@ -241,29 +241,7 @@ Widget _buildModernHeader(String userName) {
                   ),
                   overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 8),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.location_on, color: Colors.white, size: 14),
-                      SizedBox(width: 4),
-                      Text(
-                        'Sylhet, Bangladesh',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+                
               ],
             ),
           ),
@@ -549,7 +527,7 @@ Widget _buildModernHeader(String userName) {
 
   Widget _buildModernCategoryCard(Category category, int index) {
     final colors = [
-      [Colors.blue[400]!, Colors.blue[600]!],
+      [const Color.fromARGB(255, 8, 214, 170)!, Colors.blue[600]!],
       [Colors.purple[400]!, Colors.purple[600]!],
       [Colors.orange[400]!, Colors.orange[600]!],
       [Colors.teal[400]!, Colors.teal[600]!],

@@ -92,7 +92,7 @@ class _ProviderListPageState extends State<ProviderListPage> {
   Color _getCategoryColor() {
     switch (widget.category.name.toLowerCase()) {
       case 'electrician':
-        return Colors.amber;
+        return Colors.blue;
       case 'mechanic':
         return Colors.blue;
       case 'plumber':

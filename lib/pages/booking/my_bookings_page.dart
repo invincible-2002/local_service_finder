@@ -74,7 +74,7 @@ class MyBookingsPage extends ConsumerWidget {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
+          onPressed: (){ Navigator.of(context).pop();},
         ),
         title: const Text(
           'My Bookings',

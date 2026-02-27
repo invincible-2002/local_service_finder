@@ -6,7 +6,7 @@ class ProviderService {
 
   // Fetch all service providers (no joins - simpler)
   Future<List<ServiceProvider>> getServiceProviders() async {
-    print('🔍 ProviderService: Fetching providers...');
+    print(' ProviderService: Fetching providers...');
     
     try {
       final response = await _client
@@ -15,7 +15,7 @@ class ProviderService {
           .eq('is_available', true)
           .order('rating', ascending: false);
 
-      print('📦 Providers response: ${(response as List).length} providers');
+      print('Providers response: ${(response as List).length} providers');
 
       List<ServiceProvider> providers = [];
       
@@ -32,7 +32,7 @@ class ProviderService {
           
           provider.userName = profileResponse?['full_name'] ?? 'Unknown';
         } catch (e) {
-          print('⚠️ Failed to fetch profile for ${provider.userId}: $e');
+          print('Failed to fetch profile for ${provider.userId}: $e');
           provider.userName = 'Unknown';
         }
         
@@ -46,7 +46,7 @@ class ProviderService {
           
           provider.categoryName = categoryResponse?['name'] ?? 'Unknown';
         } catch (e) {
-          print('⚠️ Failed to fetch category for ${provider.categoryId}: $e');
+          print(' Failed to fetch category for ${provider.categoryId}: $e');
           provider.categoryName = 'Unknown';
         }
         
@@ -56,8 +56,8 @@ class ProviderService {
       print('✅ Successfully loaded ${providers.length} providers');
       return providers;
     } catch (e, stackTrace) {
-      print('❌ Error fetching providers: $e');
-      print('📍 Stack trace: $stackTrace');
+      print('Error fetching providers: $e');
+      print(' Stack trace: $stackTrace');
       throw Exception('Failed to fetch service providers: $e');
     }
   }
